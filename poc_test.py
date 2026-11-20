@@ -62,15 +62,40 @@ def notify_mobile_server(table_name, srv_url):
 
 # Kamera kaynağını belirle
 source = args.source
-if source.isdigit():
-    source = int(source)
+cap = None
 
-cap = cv2.VideoCapture(source)
-if not cap.isOpened():
+if isinstance(source, str) and (source.startswith("http://") or source.startswith("https://")):
+    raw_url = source.rstrip('/')
+    # Otomatik algılanacak olası video yayın yolları
+    candidates = [
+        raw_url,
+        f"{raw_url}/video",
+        f"{raw_url}/live",
+        f"{raw_url}/videofeed",
+        f"{raw_url}/mjpeg",
+        f"{raw_url}/live.mjpg"
+    ]
+    print(f"[BILGI] IP Kamera akisi baglantisi deneniyor: {raw_url}")
+    for candidate in candidates:
+        temp_cap = cv2.VideoCapture(candidate)
+        if temp_cap.isOpened():
+            ret, test_frame = temp_cap.read()
+            if ret and test_frame is not None:
+                cap = temp_cap
+                source = candidate
+                print(f"[BASARILI] IP Kamera yayini bulundu ve baglanildi: {candidate}")
+                break
+            temp_cap.release()
+else:
+    if str(source).isdigit():
+        source = int(source)
+    cap = cv2.VideoCapture(source)
+
+if cap is None or not cap.isOpened():
     print(f"[HATA] Kamera kaynagi acilamadi: {source}")
     print("Ipuclari:")
-    print("1. Laptop kamerasi icin '--source 0' deneyin.")
-    print("2. Telefon IP kamerasi kullaniyorsaniz: '--source http://192.168.1.X:8080/video'")
+    print("1. Telefonun ve bilgisayarin ayni Wi-Fi aginda oldugundan emin olun.")
+    print("2. Ekranda cikan LAN adresini girin (Orn: http://192.168.1.X:8081)")
     sys.exit(1)
 
 # Hedef renk (HSV formatında) - Varsayılan: Parlak Yeşil (Neon Green)

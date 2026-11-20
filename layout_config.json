@@ -10,19 +10,19 @@
       "id": "t1",
       "name": "Masa 1",
       "zone": "Ana Salon",
-      "status": "active",
-      "x": 100,
-      "y": 80,
-      "last_alert": null,
-      "alert_msg": ""
+      "status": "serving",
+      "x": 18,
+      "y": 0,
+      "last_alert": "10:53:29",
+      "alert_msg": "Garson ilgileniyor"
     },
     {
       "id": "t2",
       "name": "Masa 2",
       "zone": "Ana Salon",
       "status": "idle",
-      "x": 220,
-      "y": 80,
+      "x": 149,
+      "y": 36,
       "last_alert": null,
       "alert_msg": ""
     },
@@ -51,8 +51,8 @@
       "name": "Bahçe 1",
       "zone": "Bahçe",
       "status": "idle",
-      "x": 100,
-      "y": 320,
+      "x": 57,
+      "y": 323,
       "last_alert": null,
       "alert_msg": ""
     },
@@ -64,15 +64,17 @@
       "x": 220,
       "y": 320,
       "last_alert": null,
-      "alert_msg": ""
+      "alert_msg": "",
+      "w": 55,
+      "h": 50
     },
     {
       "id": "t7",
       "name": "Bar Tabure 1",
       "zone": "Bar Tezgahı",
       "status": "active",
-      "x": 340,
-      "y": 200,
+      "x": 238,
+      "y": 260,
       "last_alert": null,
       "alert_msg": ""
     }
