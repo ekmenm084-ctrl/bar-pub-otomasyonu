@@ -2,76 +2,89 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>iPhone Kamera Bağlantı QR Kodları</title>
+  <title>Pub & Bar Otomasyonu — Tüm QR Kodlarım</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-8 flex flex-col items-center justify-center font-sans select-none">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-8 flex flex-col items-center justify-start font-sans select-none">
 
-  <div class="max-w-3xl w-full text-center space-y-6">
+  <div class="max-w-4xl w-full text-center space-y-6">
+    
     <div>
       <div class="inline-block p-3 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-blue-400 text-3xl mb-2">
-        📲 📷
+        📲 📷 🍻
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">
-        iPhone Kamera Eşleştirme QR Kodları
+      <h1 class="text-3xl font-black tracking-tight text-white">
+        Pub & Bar Otomasyonu — QR Kodlarım
       </h1>
       <p class="text-sm text-slate-400 mt-1">
-        Telefondaki kamera uygulamasının QR tarayıcısını aşağıdaki kodlara tutarak anında bağlanabilirsiniz.
+        iPhone kameranızı aşağıdaki ilgili QR koda tutarak tek tıkla bağlanabilirsiniz.
       </p>
     </div>
 
-    <!-- QR Kodlar Izgarası -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+    <!-- 1. BÖLÜM: EN ÖNEMLİ 2 ANA QR KOD (KAMERA VE GARSON EKRANI) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
 
-      <!-- 1. Seçenek: Sadece Bilgisayar IP'si -->
-      <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col items-center space-y-4 hover:border-blue-500 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/30">
-          1. Seçenek (En Çok Kullanılan)
-        </span>
-        <div class="p-3 bg-white rounded-2xl shadow-lg">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=192.168.1.4" alt="IP QR" class="w-44 h-44">
+      <!-- 1. KART: MASA KAMERASI (SAFARI) -->
+      <div class="p-6 rounded-3xl bg-slate-900 border-2 border-emerald-500 shadow-2xl flex flex-col items-center space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 text-lg">📹</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+            iPhone Masa Kamerası QR
+          </span>
         </div>
-        <div>
-          <div class="text-xs font-bold text-white">Sadece Bilgisayar IP'si</div>
-          <div class="text-sm font-mono text-emerald-400 font-bold mt-0.5">192.168.1.4</div>
+
+        <div class="p-3 bg-white rounded-2xl shadow-xl">
+          <img src="kamera_qr.png" alt="Kamera QR Kodu" class="w-52 h-52">
+        </div>
+
+        <div class="space-y-1 w-full">
+          <div class="text-sm font-bold text-white">Safari Web Kamera Takip Sayfası</div>
+          <div class="text-xs font-mono text-emerald-400 font-bold bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 break-all select-all">
+            https://192.168.1.4:8000/kamera
+          </div>
+          <p class="text-[11px] text-slate-400 pt-1">
+            (Kamerayı okutunca <em>"Ayrıntıları Göster -> Web sitesini ziyaret et"</em> deyin ve kameraya izin verin).
+          </p>
         </div>
       </div>
 
-      <!-- 2. Seçenek: IP + Port 8080/8081 -->
-      <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col items-center space-y-4 hover:border-blue-500 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">
-          2. Seçenek (Port Dahil)
-        </span>
-        <div class="p-3 bg-white rounded-2xl shadow-lg">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=http://192.168.1.4:8081" alt="Port QR" class="w-44 h-44">
+      <!-- 2. KART: GARSON VE BİLDİRİM EKRANI -->
+      <div class="p-6 rounded-3xl bg-slate-900 border-2 border-blue-500 shadow-2xl flex flex-col items-center space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="text-blue-400 text-lg">🔔</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/30">
+            Garson & Bar Ekranı QR
+          </span>
         </div>
-        <div>
-          <div class="text-xs font-bold text-white">Kamera Portu İle</div>
-          <div class="text-sm font-mono text-amber-400 font-bold mt-0.5">http://192.168.1.4:8081</div>
-        </div>
-      </div>
 
-      <!-- 3. Seçenek: Ana Sunucu (Port 8000) -->
-      <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col items-center space-y-4 hover:border-blue-500 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
-          3. Seçenek (Ana Sunucu)
-        </span>
-        <div class="p-3 bg-white rounded-2xl shadow-lg">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=http://192.168.1.4:8000" alt="Server QR" class="w-44 h-44">
+        <div class="p-3 bg-white rounded-2xl shadow-xl">
+          <img src="garson_ekrani_qr.png" alt="Garson Ekranı QR Kodu" class="w-52 h-52">
         </div>
-        <div>
-          <div class="text-xs font-bold text-white">Pub Sunucusu Portu</div>
-          <div class="text-sm font-mono text-emerald-400 font-bold mt-0.5">http://192.168.1.4:8000</div>
+
+        <div class="space-y-1 w-full">
+          <div class="text-sm font-bold text-white">Garson Bildirim & Kat Planı</div>
+          <div class="text-xs font-mono text-blue-400 font-bold bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 break-all select-all">
+            https://192.168.1.4:8000
+          </div>
+          <p class="text-[11px] text-slate-400 pt-1">
+            (Kadeh bittiğinde titreyen ve masaları gösteren ana garson arayüzü).
+          </p>
         </div>
       </div>
 
     </div>
 
-    <!-- Alt Bilgilendirme -->
-    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 max-w-xl mx-auto space-y-1">
-      <div>💡 <strong>İpucu:</strong> Telefon uygulamanızdaki QR tarayıcıyı sırayla yukarıdaki 1. veya 2. koda tutun.</div>
-      <div>Uygulama kodu okuduğu an bilgisayarınızla otomatik eşleşecektir.</div>
+    <!-- 2. BÖLÜM: DİĞER KAMERA UYGULAMALARI İÇİN YEREL IP -->
+    <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-4">
+      <div class="text-left">
+        <strong class="text-white block">Diğer Uygulamalar İçin Yerel IP:</strong>
+        <span>Eğer Iriun, DroidCam vb. uygulama kullanırsanız bilgisayarınızın yerel IP'si:</span>
+      </div>
+      <div class="font-mono text-emerald-400 font-bold text-sm bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
+        192.168.1.4
+      </div>
     </div>
+
   </div>
 
 </body>
