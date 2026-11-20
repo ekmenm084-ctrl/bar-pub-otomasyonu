@@ -26,13 +26,13 @@ CONFIG_FILE = "layout_config.json"
 DEFAULT_CONFIG = {
     "zones": ["Ana Salon", "Bahçe", "VIP Loca", "Bar Tezgahı"],
     "tables": [
-        {"id": "t1", "name": "Masa 1", "zone": "Ana Salon", "status": "active", "x": 100, "y": 80, "last_alert": None, "alert_msg": ""},
-        {"id": "t2", "name": "Masa 2", "zone": "Ana Salon", "status": "idle", "x": 220, "y": 80, "last_alert": None, "alert_msg": ""},
-        {"id": "t3", "name": "Masa 3", "zone": "Ana Salon", "status": "active", "x": 340, "y": 80, "last_alert": None, "alert_msg": ""},
-        {"id": "t4", "name": "VIP 1", "zone": "VIP Loca", "status": "active", "x": 100, "y": 200, "last_alert": None, "alert_msg": ""},
-        {"id": "t5", "name": "Bahçe 1", "zone": "Bahçe", "status": "idle", "x": 100, "y": 320, "last_alert": None, "alert_msg": ""},
-        {"id": "t6", "name": "Bahçe 2", "zone": "Bahçe", "status": "active", "x": 220, "y": 320, "last_alert": None, "alert_msg": ""},
-        {"id": "t7", "name": "Bar Tabure 1", "zone": "Bar Tezgahı", "status": "active", "x": 340, "y": 200, "last_alert": None, "alert_msg": ""}
+        {"id": "t1", "name": "Masa 1", "zone": "Ana Salon", "status": "active", "x": 30, "y": 40, "w": 85, "h": 85, "notes": "2x Bira (Tuborg Gold), 1x Fıstık", "last_alert": None, "alert_msg": ""},
+        {"id": "t2", "name": "Masa 2", "zone": "Ana Salon", "status": "idle", "x": 140, "y": 40, "w": 85, "h": 85, "notes": "", "last_alert": None, "alert_msg": ""},
+        {"id": "t3", "name": "Masa 3", "zone": "Ana Salon", "status": "active", "x": 250, "y": 40, "w": 85, "h": 85, "notes": "1x Viski Cola, 1x Cin Tonik", "last_alert": None, "alert_msg": ""},
+        {"id": "t4", "name": "VIP 1", "zone": "VIP Loca", "status": "active", "x": 30, "y": 160, "w": 140, "h": 90, "notes": "VIP Rezervasyon: Ahmet Bey (1x Şarap)", "last_alert": None, "alert_msg": ""},
+        {"id": "t5", "name": "Bahçe 1", "zone": "Bahçe", "status": "idle", "x": 30, "y": 280, "w": 85, "h": 85, "notes": "", "last_alert": None, "alert_msg": ""},
+        {"id": "t6", "name": "Bahçe 2", "zone": "Bahçe", "status": "active", "x": 140, "y": 280, "w": 85, "h": 85, "notes": "3x Bira, 1x Patates", "last_alert": None, "alert_msg": ""},
+        {"id": "t7", "name": "Bar Tezgahı 1", "zone": "Bar Tezgahı", "status": "active", "x": 200, "y": 160, "w": 160, "h": 65, "notes": "Bar misafiri: 2x Kokteyl", "last_alert": None, "alert_msg": ""}
     ]
 }
 
@@ -81,8 +81,11 @@ manager = ConnectionManager()
 class TableCreate(BaseModel):
     name: str
     zone: str
-    x: Optional[int] = 100
-    y: Optional[int] = 100
+    x: Optional[int] = 30
+    y: Optional[int] = 40
+    w: Optional[int] = 85
+    h: Optional[int] = 85
+    notes: Optional[str] = ""
 
 class TableUpdate(BaseModel):
     name: Optional[str] = None
@@ -90,6 +93,9 @@ class TableUpdate(BaseModel):
     status: Optional[str] = None # 'idle', 'active', 'low', 'alert', 'serving'
     x: Optional[int] = None
     y: Optional[int] = None
+    w: Optional[int] = None
+    h: Optional[int] = None
+    notes: Optional[str] = None
 
 class ZoneCreate(BaseModel):
     name: str
@@ -117,6 +123,9 @@ async def add_table(table: TableCreate):
         "status": "idle",
         "x": table.x,
         "y": table.y,
+        "w": table.w or 85,
+        "h": table.h or 85,
+        "notes": table.notes or "",
         "last_alert": None,
         "alert_msg": ""
     }
@@ -127,7 +136,7 @@ async def add_table(table: TableCreate):
 
 @app.put("/api/tables/{table_id}")
 async def update_table(table_id: str, payload: TableUpdate):
-    """Masa adı, bölgesi, konumu veya durumunu günceller"""
+    """Masa adı, bölgesi, konumu, boyutu veya sipariş notunu günceller"""
     found = None
     for t in config_data["tables"]:
         if t["id"] == table_id:
@@ -143,6 +152,12 @@ async def update_table(table_id: str, payload: TableUpdate):
                 t["x"] = payload.x
             if payload.y is not None:
                 t["y"] = payload.y
+            if payload.w is not None:
+                t["w"] = payload.w
+            if payload.h is not None:
+                t["h"] = payload.h
+            if payload.notes is not None:
+                t["notes"] = payload.notes
             found = t
             break
 
@@ -172,9 +187,16 @@ async def add_zone(zone: ZoneCreate):
 
 @app.delete("/api/zones/{zone_name}")
 async def delete_zone(zone_name: str):
-    """Bölgeyi siler"""
+    """Bölgeyi siler ve o bölgedeki masaları güvenle diğer bölgeye taşır"""
     if zone_name in config_data["zones"]:
         config_data["zones"].remove(zone_name)
+        fallback_zone = config_data["zones"][0] if config_data["zones"] else "Genel"
+        if fallback_zone == "Genel" and "Genel" not in config_data["zones"]:
+            config_data["zones"].append("Genel")
+        # O bölgedeki masaları aktar
+        for t in config_data["tables"]:
+            if t["zone"] == zone_name:
+                t["zone"] = fallback_zone
         save_config(config_data)
         await manager.broadcast({"type": "TABLES_UPDATED", "data": config_data})
     return {"success": True}
