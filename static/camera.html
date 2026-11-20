@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#090d16">
+  <title>Pub Bar - Web Kamera Takip</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: #090d16;
+      color: #f8fafc;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #videoFeed {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Üst Kontrol Barı */
+    .overlay-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      background: linear-gradient(180deg, rgba(9, 13, 22, 0.9) 0%, rgba(9, 13, 22, 0) 100%);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-select {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    /* Odak Alanı Çerçevesi (ROI) */
+    .roi-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 250px;
+      height: 250px;
+      border: 3px dashed #10b981;
+      border-radius: 24px;
+      z-index: 10;
+      pointer-events: none;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .roi-frame.alert {
+      border-color: #ef4444;
+      border-style: solid;
+      box-shadow: 0 0 0 9999px rgba(239, 68, 68, 0.35);
+      animation: alertPulse 1.2s infinite;
+    }
+    .roi-frame.counting {
+      border-color: #f59e0b;
+      border-style: solid;
+    }
+
+    @keyframes alertPulse {
+      0%, 100% { border-color: #ef4444; }
+      50% { border-color: #fca5a5; }
+    }
+
+    /* Alt Durum Paneli */
+    .overlay-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      background: linear-gradient(0deg, rgba(9, 13, 22, 0.95) 0%, rgba(9, 13, 22, 0.7) 70%, rgba(9, 13, 22, 0) 100%);
+      padding: 24px 20px 34px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .status-text {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #34d399;
+      letter-spacing: -0.3px;
+    }
+    .status-text.counting { color: #fbbf24; }
+    .status-text.alert { color: #f87171; font-size: 1.3rem; }
+
+    .ratio-badge {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .btn-calibrate {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .color-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid white;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Video Akışı -->
+  <video id="videoFeed" playsinline autoplay muted></video>
+  
+  <!-- Gizli Analiz Kanvası -->
+  <canvas id="analysisCanvas" style="display:none;"></canvas>
+
+  <!-- Üst Bar -->
+  <div class="overlay-top">
+    <div style="font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px;">
+      <span>📹</span> Masa Kamerası
+    </div>
+    <select id="tableSelector" class="table-select">
+      <option value="Masa 1">Masa 1</option>
+      <option value="Masa 2">Masa 2</option>
+      <option value="Masa 3">Masa 3</option>
+      <option value="VIP 1">VIP 1</option>
+      <option value="Bahçe 1">Bahçe 1</option>
+    </select>
+  </div>
+
+  <!-- Odak Kutusu -->
+  <div id="roiFrame" class="roi-frame">
+    <span style="font-size: 0.72rem; font-weight:800; background:rgba(0,0,0,0.6); padding:2px 8px; border-radius:6px; color:#cbd5e1;">
+      Bardağı & Altlığı Bu Kutunun İçine Koyun
+    </span>
+    <span style="font-size: 0.65rem; color:#94a3b8; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:6px;">
+      Rengi Tanıtmak İçin Ekrana Dokunun 👇
+    </span>
+  </div>
+
+  <!-- Alt Panel -->
+  <div class="overlay-bottom">
+    <div id="statusLabel" class="status-text">Kamera Başlatılıyor...</div>
+    <div class="ratio-badge">
+      Altlık Görünürlük: <span id="ratioLabel" style="color:white; font-weight:700;">%0</span> | 
+      Hedef: <span id="colorSwatch" class="color-swatch" style="background:#10b981;"></span>
+    </div>
+    <button id="btnSwitchCamera" class="btn-calibrate" onclick="startCamera()">
+      📷 Kamerayı Başlat
+    </button>
+  </div>
+
+  <script>
+    const video = document.getElementById('videoFeed');
+    const canvas = document.getElementById('analysisCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    const roiFrame = document.getElementById('roiFrame');
+    const statusLabel = document.getElementById('statusLabel');
+    const ratioLabel = document.getElementById('ratioLabel');
+    const colorSwatch = document.getElementById('colorSwatch');
+    const tableSelector = document.getElementById('tableSelector');
+
+    let currentStream = null;
+    let targetHSV = [60, 0.7, 0.7]; // Varsayılan: Parlak Yeşil
+    let alarmTimer = null;
+    let emptyStartTime = null;
+    let alertSent = false;
+    const ALARM_THRESHOLD_SEC = 5; // Test için 5 saniye
+
+    // Kamerayı Başlat (Arka Kamera)
+    async function startCamera() {
+      try {
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+        }
+
+        const constraints = {
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        currentStream = stream;
+        video.srcObject = stream;
+        await video.play();
+
+        document.getElementById('btnSwitchCamera').style.display = 'none';
+        statusLabel.innerText = "DOLU / İÇİLİYOR";
+        statusLabel.className = "status-text";
+
+        // Analiz döngüsünü başlat (Saniyede 10 kare)
+        setInterval(analyzeFrame, 100);
+      } catch (err) {
+        alert("Kamera izni alınamadı: " + err.message + "\nLütfen Safari'den kamera iznine izin verin.");
+        statusLabel.innerText = "Kamera Hatası!";
+      }
+    }
+
+    // Dokunarak Renk Kalibrasyonu
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+      if (!video.videoWidth) return;
+
+      const rect = video.getBoundingClientRect();
+      const xRatio = (e.clientX - rect.left) / rect.width;
+      const yRatio = (e.clientY - rect.top) / rect.height;
+
+      const sampleCanvas = document.createElement('canvas');
+      sampleCanvas.width = video.videoWidth;
+      sampleCanvas.height = video.videoHeight;
+      const sCtx = sampleCanvas.getContext('2d');
+      sCtx.drawImage(video, 0, 0);
+
+      const pxX = Math.floor(xRatio * video.videoWidth);
+      const pxY = Math.floor(yRatio * video.videoHeight);
+      const pixel = sCtx.getImageData(pxX, pxY, 1, 1).data;
+
+      const rgb = [pixel[0], pixel[1], pixel[2]];
+      targetHSV = rgbToHsv(rgb[0], rgb[1], rgb[2]);
+      colorSwatch.style.background = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+      
+      // Haptic titreşim
+      if ('vibrate' in navigator) navigator.vibrate(50);
+    });
+
+    // Kare Analiz Fonksiyonu
+    function analyzeFrame() {
+      if (video.readyState < 2) return;
+
+      canvas.width = 120;
+      canvas.height = 120;
+
+      // Videonun ortasındaki odak alanını küçük kanvasa çek
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const cropW = Math.min(vw, vh) * 0.45;
+      const cropH = cropW;
+      const cropX = (vw - cropW) / 2;
+      const cropY = (vh - cropH) / 2;
+
+      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, 120, 120);
+      const imgData = ctx.getImageData(0, 0, 120, 120);
+      const data = imgData.data;
+
+      let matchedPixels = 0;
+      const totalPixels = 120 * 120;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const hsv = rgbToHsv(data[i], data[i+1], data[i+2]);
+        // Renk benzerliği hesapla (Hue toleransı +- 30 derece)
+        let hueDiff = Math.abs(hsv[0] - targetHSV[0]);
+        if (hueDiff > 180) hueDiff = 360 - hueDiff;
+
+        if (hueDiff < 30 && hsv[1] > 0.25 && hsv[2] > 0.25) {
+          matchedPixels++;
+        }
+      }
+
+      const ratio = (matchedPixels / totalPixels) * 100;
+      ratioLabel.innerText = `%${ratio.toFixed(1)}`;
+
+      // Eşik: Altlığın %30'undan fazlası görünürse bardak boş/azalmış sayılır
+      const isEmptyOrLow = ratio > 30.0;
+      const now = Date.now();
+
+      if (isEmptyOrLow) {
+        if (!emptyStartTime) emptyStartTime = now;
+        const elapsedSec = (now - emptyStartTime) / 1000;
+        const remaining = Math.max(0, ALARM_THRESHOLD_SEC - elapsedSec);
+
+        if (elapsedSec >= ALARM_THRESHOLD_SEC) {
+          // ALARM TETİKLE!
+          statusLabel.innerText = "🚨 ALARM: KADEH BİTTİ!";
+          statusLabel.className = "status-text alert";
+          roiFrame.className = "roi-frame alert";
+
+          if (!alertSent) {
+            sendServerAlert();
+            alertSent = true;
+          }
+        } else {
+          statusLabel.innerText = `BOŞ ALGILANDI: ${remaining.toFixed(1)}s sonra alarm`;
+          statusLabel.className = "status-text counting";
+          roiFrame.className = "roi-frame counting";
+        }
+      } else {
+        // Bardak dolu, sayacı sıfırla
+        emptyStartTime = null;
+        alertSent = false;
+        statusLabel.innerText = "DOLU / İÇİLİYOR";
+        statusLabel.className = "status-text";
+        roiFrame.className = "roi-frame";
+      }
+    }
+
+    async function sendServerAlert() {
+      const selectedTable = tableSelector.value;
+      try {
+        await fetch('/api/alert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            table_id: selectedTable,
+            alert_type: 'empty_glass',
+            message: 'Kadeh Boşaldı (2. Siparişi Alın)'
+          })
+        });
+        console.log("Sunucuya alarm iletildi!");
+      } catch (e) {
+        console.log("Alarm iletme hatası:", e);
+      }
+    }
+
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, v = max;
+      const d = max - min;
+      s = max === 0 ? 0 : d / max;
+
+      if (max === min) {
+        h = 0;
+      } else {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return [h * 360, s, v];
+    }
+
+    // Sayfa açıldığında otomatik kamerayı başlatmayı dene
+    window.addEventListener('DOMContentLoaded', () => {
+      startCamera();
+    });
+  </script>
+</body>
+</html>

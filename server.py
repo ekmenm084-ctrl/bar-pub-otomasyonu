@@ -278,6 +278,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def serve_index():
     return FileResponse("static/index.html")
 
+@app.get("/kamera")
+def serve_camera():
+    return FileResponse("static/camera.html")
+
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -292,11 +296,18 @@ def get_local_ip():
 if __name__ == "__main__":
     local_ip = get_local_ip()
     port = 8000
+    ssl_cert = "cert.pem" if os.path.exists("cert.pem") else None
+    ssl_key = "key.pem" if os.path.exists("key.pem") else None
+    protocol = "https" if ssl_cert else "http"
+
     print("\n" + "="*60)
-    print(" 🍻 PUB & BAR OTOMASYONU - MERKEZI SUNUCU BASLATILDI")
+    print(" 🍻 PUB & BAR OTOMASYONU - MERKEZI SUNUCU")
     print("="*60)
-    print(f" -> Bilgisayardan erisim : http://localhost:{port}")
-    print(f" -> TELEFONDAN ERISIM   : http://{local_ip}:{port}")
-    print("    (iPhone ve Android telefonunuzun tarayicisindan bu adrese girin)")
+    print(f" -> Garson Ekrani : {protocol}://{local_ip}:{port}")
+    print(f" -> Masa Kamerasi : {protocol}://{local_ip}:{port}/kamera")
     print("="*60 + "\n")
-    uvicorn.run("server:app", host="0.0.0.0", port=port, reload=False)
+
+    if ssl_cert and ssl_key:
+        uvicorn.run("server:app", host="0.0.0.0", port=port, ssl_keyfile=ssl_key, ssl_certfile=ssl_cert, reload=False)
+    else:
+        uvicorn.run("server:app", host="0.0.0.0", port=port, reload=False)
