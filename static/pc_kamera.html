@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Pub Bar - PC Kamera Kontrol ve Kalibrasyon</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes alertGlow {
+      0%, 100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); border-color: #ef4444; }
+      50% { box-shadow: 0 0 50px rgba(239, 68, 68, 0.9); border-color: #f87171; }
+    }
+    .alert-active {
+      animation: alertGlow 1.2s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 flex flex-col items-center justify-start font-sans select-none">
+
+  <!-- Üst Başlık & Kontrol -->
+  <header class="w-full max-w-5xl mb-6 flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">🖥️ 📹</span>
+      <div>
+        <h1 class="text-xl font-bold text-white">PC Canlı Kamera Takip & Kalibrasyon Ekranı</h1>
+        <p class="text-xs text-slate-400">iPhone kameranızdan gelen canlı görüntü bilgisayarınızda gösterilmektedir.</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+        <span class="text-xs text-slate-400 font-semibold">İzlenen Masa:</span>
+        <select id="selectedTable" class="bg-transparent text-white font-bold text-xs outline-none cursor-pointer">
+          <option value="Masa 1">Masa 1</option>
+          <option value="Masa 2">Masa 2</option>
+          <option value="Masa 3">Masa 3</option>
+          <option value="VIP 1">VIP 1</option>
+          <option value="Bahçe 1">Bahçe 1</option>
+        </select>
+      </div>
+      <a href="/" target="_blank" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition flex items-center gap-1.5">
+        <span>🔔</span> Garson Ekranını Aç
+      </a>
+    </div>
+  </header>
+
+  <!-- Ana Alan: Kamera Görüntüsü + Sağ Kontrol Kartı -->
+  <div class="w-full max-w-5xl flex flex-col lg:flex-row items-start justify-center gap-6">
+
+    <!-- SOL: CANLI VİDEO AKIŞI VE TIKLAMA ALANI -->
+    <div class="flex-1 w-full bg-slate-900 p-4 rounded-3xl border-2 border-slate-800 shadow-2xl relative flex flex-col items-center" id="videoContainer">
+      <div class="w-full flex justify-between items-center mb-3 px-1 text-xs text-slate-400">
+        <span class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <strong>iPhone Canlı Video Akışı</strong>
+        </span>
+        <span class="text-blue-400 font-semibold">👉 Renk seçmek için altlığa fareyle TIKLAYIN!</span>
+      </div>
+
+      <!-- Video Önizleme Resim Alanı -->
+      <div class="relative rounded-2xl overflow-hidden border border-slate-700 bg-black flex items-center justify-center cursor-crosshair group w-full min-h-[380px]">
+        <img id="liveStreamImg" src="/video_feed" alt="iPhone Kamera Akışı Bekleniyor..." class="w-full h-auto object-contain max-h-[500px]" onclick="sampleColorFromClick(event)">
+        
+        <!-- Merkez Odak Kutusu -->
+        <div id="aimBox" class="absolute pointer-events-none border-2 border-dashed border-emerald-400 rounded-2xl w-48 h-48 flex items-center justify-center">
+          <span class="text-[10px] font-bold bg-black/60 px-2 py-0.5 rounded text-slate-200">Odak Alanı</span>
+        </div>
+      </div>
+
+      <!-- Canlı Durum Şeridi -->
+      <div id="statusBanner" class="w-full mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex justify-between items-center transition-all">
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Anlık Durum</div>
+          <div id="statusText" class="text-lg font-black text-emerald-400 mt-0.5">🟢 DOLU / İÇİLİYOR</div>
+        </div>
+        <div class="text-right">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Altlık Görünürlüğü</div>
+          <div id="visibilityText" class="text-lg font-black text-white mt-0.5">%0.0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAĞ: KALİBRASYON & BİLGİ PANELİ -->
+    <div class="w-full lg:w-80 space-y-4">
+      
+      <!-- Kart 1: Renk Kalibrasyonu -->
+      <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>🎨</span> Hedef Altlık Rengi
+        </h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Kamera görüntüsündeki altlığın veya renkli kartın üzerine sol tıklayarak rengi anında ezberletin.
+        </p>
+
+        <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-950 border border-slate-800">
+          <div id="targetColorBox" class="w-12 h-12 rounded-xl border-2 border-white shadow-md" style="background:#10b981;"></div>
+          <div>
+            <div class="text-xs font-bold text-white" id="colorNameLabel">Parlak Yeşil (Varsayılan)</div>
+            <div class="text-[10px] text-slate-400 font-mono mt-0.5" id="colorRgbLabel">RGB(16, 185, 129)</div>
+          </div>
+        </div>
+
+        <button onclick="resetDefaultGreen()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition">
+          Varsayılan Yeşile Sıfırla
+        </button>
+      </div>
+
+      <!-- Kart 2: Alarm Ayarları -->
+      <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>⏱️</span> Alarm Süresi
+        </h3>
+        <p class="text-xs text-slate-400">
+          Altlık boş kaldığında garsona kaç saniye sonra bildirim gideceğini belirleyin:
+        </p>
+        <div class="flex gap-2">
+          <button onclick="setAlarmDuration(5)" id="btnTimer5" class="flex-1 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs">5 Saniye (Test)</button>
+          <button onclick="setAlarmDuration(180)" id="btnTimer180" class="flex-1 py-2 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs">3 Dakika (Pub)</button>
+        </div>
+      </div>
+
+      <!-- Kart 3: Nasıl Çalışır Kılavuzu -->
+      <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 space-y-2">
+        <div class="font-bold text-slate-300 flex items-center gap-1.5">
+          <span>💡</span> Test Adımı:
+        </div>
+        <ol class="list-decimal list-inside space-y-1 text-slate-300">
+          <li>Masanızdaki bardağın altına renkli kartı koyun.</li>
+          <li>Soldaki videoda karta tıklayıp rengi tanıtın.</li>
+          <li>Bardağı masadan kaldırın.</li>
+          <li>5 saniye sonra ekranda ve telefonda <strong>ALARM</strong> ötecektir!</li>
+        </ol>
+      </div>
+
+    </div>
+
+  </div>
+
+  <canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+  <script>
+    const img = document.getElementById('liveStreamImg');
+    const hiddenCanvas = document.getElementById('hiddenCanvas');
+    const hCtx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+    
+    const statusText = document.getElementById('statusText');
+    const visibilityText = document.getElementById('visibilityText');
+    const targetColorBox = document.getElementById('targetColorBox');
+    const colorNameLabel = document.getElementById('colorNameLabel');
+    const colorRgbLabel = document.getElementById('colorRgbLabel');
+    const selectedTable = document.getElementById('selectedTable');
+    const statusBanner = document.getElementById('statusBanner');
+    const aimBox = document.getElementById('aimBox');
+
+    let targetHSV = [60, 0.7, 0.7]; // Varsayılan: Yeşil
+    let alarmSec = 5;
+    let emptyStart = null;
+    let alertTriggered = false;
+    let audioCtx = null;
+
+    function playBeep() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.setValueAtTime(950, now);
+        g.gain.setValueAtTime(0.3, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.4);
+      } catch(e){}
+    }
+
+    // Tıklanan pikselden renk alma
+    function sampleColorFromClick(e) {
+      if (!img.naturalWidth) return;
+      const rect = img.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+
+      hiddenCanvas.width = img.naturalWidth;
+      hiddenCanvas.height = img.naturalHeight;
+      hCtx.drawImage(img, 0, 0);
+
+      const pxX = Math.floor(x * img.naturalWidth);
+      const pxY = Math.floor(y * img.naturalHeight);
+      const pixel = hCtx.getImageData(pxX, pxY, 1, 1).data;
+
+      const r = pixel[0], g = pixel[1], b = pixel[2];
+      targetHSV = rgbToHsv(r, g, b);
+
+      targetColorBox.style.background = `rgb(${r},${g},${b})`;
+      colorNameLabel.innerText = "Özel Altlık Rengi Seçildi";
+      colorRgbLabel.innerText = `RGB(${r}, ${g}, ${b})`;
+    }
+
+    function resetDefaultGreen() {
+      targetHSV = [60, 0.7, 0.7];
+      targetColorBox.style.background = "#10b981";
+      colorNameLabel.innerText = "Parlak Yeşil (Varsayılan)";
+      colorRgbLabel.innerText = "RGB(16, 185, 129)";
+    }
+
+    function setAlarmDuration(sec) {
+      alarmSec = sec;
+      if (sec === 5) {
+        document.getElementById('btnTimer5').className = "flex-1 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs";
+        document.getElementById('btnTimer180').className = "flex-1 py-2 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs";
+      } else {
+        document.getElementById('btnTimer180').className = "flex-1 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs";
+        document.getElementById('btnTimer5').className = "flex-1 py-2 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs";
+      }
+    }
+
+    // Kare Analizi Döngüsü
+    function analyzeStream() {
+      if (!img.naturalWidth) return;
+      hiddenCanvas.width = 100;
+      hiddenCanvas.height = 100;
+
+      // Merkez odak alanını al
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      const cropSize = Math.min(nw, nh) * 0.45;
+      const cropX = (nw - cropSize) / 2;
+      const cropY = (nh - cropSize) / 2;
+
+      hCtx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, 100, 100);
+      const imgData = hCtx.getImageData(0, 0, 100, 100).data;
+
+      let matchCount = 0;
+      const total = 100 * 100;
+
+      for (let i = 0; i < imgData.length; i += 4) {
+        const hsv = rgbToHsv(imgData[i], imgData[i+1], imgData[i+2]);
+        let diff = Math.abs(hsv[0] - targetHSV[0]);
+        if (diff > 180) diff = 360 - diff;
+
+        if (diff < 32 && hsv[1] > 0.25 && hsv[2] > 0.25) {
+          matchCount++;
+        }
+      }
+
+      const ratio = (matchCount / total) * 100;
+      visibilityText.innerText = `%${ratio.toFixed(1)}`;
+
+      const isEmpty = ratio > 28.0;
+      const now = Date.now();
+
+      if (isEmpty) {
+        if (!emptyStart) emptyStart = now;
+        const elapsed = (now - emptyStart) / 1000;
+        const remain = Math.max(0, alarmSec - elapsed);
+
+        if (elapsed >= alarmSec) {
+          statusText.innerText = "🚨 ALARM: KADEH BİTTİ!";
+          statusText.className = "text-lg font-black text-red-500 animate-pulse";
+          statusBanner.className = "w-full mt-4 p-4 rounded-2xl bg-red-950/70 border-2 border-red-500 alert-active flex justify-between items-center";
+          aimBox.className = "absolute pointer-events-none border-2 border-red-500 rounded-2xl w-48 h-48 flex items-center justify-center animate-pulse";
+
+          if (!alertTriggered) {
+            playBeep();
+            triggerBackendAlert();
+            alertTriggered = true;
+          }
+        } else {
+          statusText.innerText = `🟡 BOŞ ALGILANDI: ${remain.toFixed(1)}s`;
+          statusText.className = "text-lg font-black text-amber-400";
+          statusBanner.className = "w-full mt-4 p-4 rounded-2xl bg-amber-950/40 border border-amber-500/60 flex justify-between items-center";
+          aimBox.className = "absolute pointer-events-none border-2 border-amber-400 rounded-2xl w-48 h-48 flex items-center justify-center";
+        }
+      } else {
+        emptyStart = null;
+        alertTriggered = false;
+        statusText.innerText = "🟢 DOLU / İÇİLİYOR";
+        statusText.className = "text-lg font-black text-emerald-400";
+        statusBanner.className = "w-full mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex justify-between items-center";
+        aimBox.className = "absolute pointer-events-none border-2 border-dashed border-emerald-400 rounded-2xl w-48 h-48 flex items-center justify-center";
+      }
+    }
+
+    async function triggerBackendAlert() {
+      const table = selectedTable.value;
+      try {
+        await fetch('/api/alert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            table_id: table,
+            alert_type: 'empty_glass',
+            message: 'Kadeh Boşaldı (2. Siparişi Alın)'
+          })
+        });
+      } catch(e){}
+    }
+
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, v = max;
+      const d = max - min;
+      s = max === 0 ? 0 : d / max;
+      if (max === min) h = 0;
+      else {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return [h * 360, s, v];
+    }
+
+    setInterval(analyzeStream, 120);
+  </script>
+</body>
+</html>

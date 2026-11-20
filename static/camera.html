@@ -215,6 +215,32 @@
     let alertSent = false;
     const ALARM_THRESHOLD_SEC = 5; // Test için 5 saniye
 
+    // PC'ye Video Akışı Aktarımı (WebSocket)
+    let streamSocket = null;
+    function initStreamSocket() {
+      const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      streamSocket = new WebSocket(`${wsProto}//${window.location.host}/ws/camera_stream`);
+      streamSocket.onclose = () => {
+        setTimeout(initStreamSocket, 2000);
+      };
+    }
+    initStreamSocket();
+
+    const streamCanvas = document.createElement('canvas');
+    const sCtx = streamCanvas.getContext('2d');
+
+    function sendFrameToPC() {
+      if (!video.videoWidth || !streamSocket || streamSocket.readyState !== WebSocket.OPEN) return;
+      streamCanvas.width = 480;
+      streamCanvas.height = 360;
+      sCtx.drawImage(video, 0, 0, 480, 360);
+      streamCanvas.toBlob(blob => {
+        if (blob && streamSocket && streamSocket.readyState === WebSocket.OPEN) {
+          streamSocket.send(blob);
+        }
+      }, 'image/jpeg', 0.65);
+    }
+
     // Kamerayı Başlat (Arka Kamera)
     async function startCamera() {
       try {
@@ -240,8 +266,11 @@
         statusLabel.innerText = "DOLU / İÇİLİYOR";
         statusLabel.className = "status-text";
 
-        // Analiz döngüsünü başlat (Saniyede 10 kare)
-        setInterval(analyzeFrame, 100);
+        // Analiz döngüsünü başlat (Saniyede 15 kare aktarım ve analiz)
+        setInterval(() => {
+          analyzeFrame();
+          sendFrameToPC();
+        }, 65);
       } catch (err) {
         alert("Kamera izni alınamadı: " + err.message + "\nLütfen Safari'den kamera iznine izin verin.");
         statusLabel.innerText = "Kamera Hatası!";

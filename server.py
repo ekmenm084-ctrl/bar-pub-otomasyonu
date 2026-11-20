@@ -13,12 +13,43 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel
 import uvicorn
 import socket
 
 app = FastAPI(title="Pub & Bar Otomasyonu Backend")
+
+# Canlı Kamera Görüntü Paylaşımı
+latest_camera_frame: Optional[bytes] = None
+
+@app.websocket("/ws/camera_stream")
+async def ws_camera_stream(websocket: WebSocket):
+    global latest_camera_frame
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_bytes()
+            latest_camera_frame = data
+    except WebSocketDisconnect:
+        pass
+
+async def mjpeg_frame_generator():
+    global latest_camera_frame
+    while True:
+        if latest_camera_frame is not None:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + latest_camera_frame + b'\r\n')
+        await asyncio.sleep(0.04) # ~25 fps
+
+@app.get("/video_feed")
+def get_video_feed():
+    """Telefondan gelen canlı video akışını MJPEG formatında PC'ye yayınlar"""
+    return StreamingResponse(mjpeg_frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+@app.get("/pc_kamera")
+def serve_pc_kamera():
+    return FileResponse("static/pc_kamera.html")
 
 CONFIG_FILE = "layout_config.json"
 
