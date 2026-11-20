@@ -18,9 +18,23 @@ Barlar ve pub'larda müşteri memnuniyetini ve sipariş hızını artırmak amac
 - **Debounce / Zaman Sınırı Algoritması:** Müşteri kadehten yudum almak için bardağı her kaldırdığında sahte alarm verilmez. Altlık kesintisiz olarak belirli bir süre (ör. 3 dakika) boş kaldığında alarm tetiklenir.
 - **API & Dağıtım:** FastAPI ve WebSocket üzerinden anlık durum yayınlama.
 
-### 4. Garson Arayüzü (Frontend & Bildirim)
-- Garsonun akıllı telefon veya saatine anında düşen titreşimli ve sesli minimalist uyarı:
-  > **🔴 Masa 4 - İçki Bitti (Gidip İkinciyi Sor)**
+### 4. Garson & Bar Arayüzü (Mobil Web / PWA)
+- **Çapraz Platform:** Hem **iOS (Safari)** hem de **Android (Chrome)** cihazlarda sıfır kurulumla ve tam ekran uygulama (PWA) olarak çalışır.
+- **Canlı Bildirim & Titreşim:** Kamera kadehin bittiğini algıladığı an telefona sesli (Web Audio Chime) ve titreşimli acil bildirim kartı düşer:
+  > **🔴 Masa 4 (İç Salon) - Kadeh Bitti! (Gidip 2. Siparişi Sor)**
+- **Dinamik Masa & Dükkan Düzeni:** Uygulama içinden dükkanın bölümleri (Bahçe, Salon, VIP, Teras vb.) ve masaların isimleri/konumları canlı olarak değiştirilebilir, yeni masalar eklenebilir veya silinebilir.
+- **2D Kat Planı:** Masalar dükkanın fiziki yerleşimine göre sürüklenip konumlandırılabilir.
+
+---
+
+## 📱 Mobil Aplikasyonu Başlatma & Telefonda Açma
+
+1. Bilgisayarda **`mobil_sunucuyu_baslat.bat`** dosyasına çift tıklayın.
+2. Terminalde çıkan yerel IP adresini (örneğin: `http://192.168.1.4:8000`) görün.
+3. Garsonların **iPhone** veya **Android** telefonundan bu adrese girin:
+   - **iPhone'da:** Safari ile adresi açın -> Paylaş butonuna basıp **"Ana Ekrana Ekle"** deyin (Tam bir App Store uygulaması gibi açılır).
+   - **Android'de:** Chrome ile açın -> Sağ üst 3 noktaya basıp **"Uygulamayı Yükle / Ana Ekrana Ekle"** deyin.
+4. Kamera takip kodunu çalıştırdığınızda (`poc_test.py`), kadeh bittiği an telefonda titreşim ve sesle birlikte alarm kartı belirecektir!
 
 ---
 

@@ -1,0 +1,80 @@
+{
+  "zones": [
+    "Ana Salon",
+    "Bahçe",
+    "VIP Loca",
+    "Bar Tezgahı"
+  ],
+  "tables": [
+    {
+      "id": "t1",
+      "name": "Masa 1",
+      "zone": "Ana Salon",
+      "status": "active",
+      "x": 100,
+      "y": 80,
+      "last_alert": null,
+      "alert_msg": ""
+    },
+    {
+      "id": "t2",
+      "name": "Masa 2",
+      "zone": "Ana Salon",
+      "status": "idle",
+      "x": 220,
+      "y": 80,
+      "last_alert": null,
+      "alert_msg": ""
+    },
+    {
+      "id": "t3",
+      "name": "Masa 3",
+      "zone": "Ana Salon",
+      "status": "active",
+      "x": 340,
+      "y": 80,
+      "last_alert": null,
+      "alert_msg": ""
+    },
+    {
+      "id": "t4",
+      "name": "VIP 1",
+      "zone": "VIP Loca",
+      "status": "active",
+      "x": 100,
+      "y": 200,
+      "last_alert": null,
+      "alert_msg": ""
+    },
+    {
+      "id": "t5",
+      "name": "Bahçe 1",
+      "zone": "Bahçe",
+      "status": "idle",
+      "x": 100,
+      "y": 320,
+      "last_alert": null,
+      "alert_msg": ""
+    },
+    {
+      "id": "t6",
+      "name": "Bahçe 2",
+      "zone": "Bahçe",
+      "status": "active",
+      "x": 220,
+      "y": 320,
+      "last_alert": null,
+      "alert_msg": ""
+    },
+    {
+      "id": "t7",
+      "name": "Bar Tabure 1",
+      "zone": "Bar Tezgahı",
+      "status": "active",
+      "x": 340,
+      "y": 200,
+      "last_alert": null,
+      "alert_msg": ""
+    }
+  ]
+}

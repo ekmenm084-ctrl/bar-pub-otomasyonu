@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pub Garson">
+  <meta name="theme-color" content="#090d16">
+  <title>Pub & Bar Garson Asistanı</title>
+  
+  <!-- Modern Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131b2e;
+      --card-border: #1e293b;
+      --accent-red: #ef4444;
+      --accent-red-glow: rgba(239, 68, 68, 0.35);
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-blue: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+    }
+
+    /* Üst Bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+    }
+    .status-badge.online {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.3);
+      background: rgba(52, 211, 153, 0.1);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .status-badge.online .status-dot {
+      box-shadow: 0 0 8px #34d399;
+      animation: pulse-dot 1.8s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Ana Konteyner */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Sekmeler */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Acil Alarm Bannerı */
+    .emergency-alert-card {
+      background: linear-gradient(135deg, #450a0a 0%, #1e1111 100%);
+      border: 2px solid var(--accent-red);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 35px var(--accent-red-glow);
+      animation: alertPulsate 1.5s infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes alertPulsate {
+      0%, 100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); border-color: #ef4444; }
+      50% { box-shadow: 0 0 45px rgba(239, 68, 68, 0.85); border-color: #f87171; }
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .alert-tag {
+      background: var(--accent-red);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+    .alert-time {
+      font-size: 0.8rem;
+      color: #fca5a5;
+      font-weight: 600;
+    }
+
+    .alert-table-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .alert-desc {
+      font-size: 0.95rem;
+      color: #fecaca;
+      margin-bottom: 18px;
+    }
+
+    .btn-action {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-action:active {
+      transform: scale(0.97);
+    }
+
+    /* Bölge Filtreleri */
+    .zone-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .zone-scroll::-webkit-scrollbar { display: none; }
+
+    .zone-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .zone-pill.active {
+      background: #2563eb;
+      color: white;
+      border-color: #3b82f6;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Masa Kartları Izgarası */
+    .tables-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+      position: relative;
+      transition: transform 0.2s, border-color 0.2s;
+      cursor: pointer;
+    }
+    .table-card:active {
+      transform: scale(0.98);
+    }
+
+    .table-card.status-alert {
+      border: 2px solid var(--accent-red);
+      background: rgba(239, 68, 68, 0.12);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+      animation: alertPulsate 1.5s infinite;
+    }
+    .table-card.status-active {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .table-card.status-serving {
+      border-color: rgba(245, 158, 11, 0.5);
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .table-card.status-idle {
+      opacity: 0.65;
+    }
+
+    .table-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .table-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .table-zone-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .table-status-badge {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .status-alert .table-status-badge { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+    .status-active .table-status-badge { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+    .status-serving .table-status-badge { background: var(--accent-yellow); box-shadow: 0 0 10px var(--accent-yellow); }
+    .status-idle .table-status-badge { background: #64748b; }
+
+    .table-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .table-status-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .status-alert .table-status-text { color: #f87171; }
+    .status-active .table-status-text { color: #34d399; }
+    .status-serving .table-status-text { color: #fbbf24; }
+    .status-idle .table-status-text { color: #94a3b8; }
+
+    /* Kat Planı (2D Floor Canvas / Grid) */
+    .floor-canvas-container {
+      background: #0f1523;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 440px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+      background-image: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .floor-table {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      border-radius: 16px;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: white;
+      text-align: center;
+      cursor: grab;
+      touch-action: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .floor-table:active {
+      cursor: grabbing;
+      transform: scale(1.05);
+      z-index: 40;
+    }
+    .floor-table.status-alert {
+      border-color: var(--accent-red);
+      background: #450a0a;
+      box-shadow: 0 0 25px var(--accent-red);
+      animation: alertPulsate 1.5s infinite;
+    }
+    .floor-table.status-active {
+      border-color: var(--accent-green);
+    }
+    .floor-table.status-serving {
+      border-color: var(--accent-yellow);
+    }
+
+    /* Yönetim & Düzenleme Formları */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      color: white;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .list-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .list-item-row:last-child { border-bottom: none; }
+
+    .btn-danger-sm {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Alt Navigasyon Barı (Mobil Uyumlu) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: rgba(9, 13, 22, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      flex: 1;
+      transition: color 0.2s;
+    }
+    .nav-btn.active {
+      color: #60a5fa;
+    }
+    .nav-icon {
+      font-size: 1.35rem;
+    }
+    .nav-badge {
+      position: absolute;
+      top: -2px;
+      right: 25%;
+      background: var(--accent-red);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 999px;
+      box-shadow: 0 0 10px var(--accent-red);
+    }
+
+    /* Test Bildirim Butonu */
+    .test-alert-bar {
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px dashed var(--card-border);
+      border-radius: 14px;
+      text-align: center;
+    }
+    .btn-test {
+      background: #334155;
+      color: #e2e8f0;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Üst Bar -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <span>🍻</span> Pub Garson Asistanı
+    </div>
+    <div id="connectionStatus" class="status-badge">
+      <div class="status-dot"></div>
+      <span id="connectionText">Bağlanıyor...</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- 1. SEKME: CANLI BİLDİRİMLER (ALERTS) -->
+    <div id="tab-alerts" class="tab-content active">
+      
+      <!-- Acil Alarmlar Alanı -->
+      <div id="activeAlertsArea"></div>
+
+      <!-- Hızlı Masa Listesi -->
+      <div class="section-title">
+        <span>📋</span> Anlık Masa Durumları
+      </div>
+
+      <!-- Bölge Filtreleri -->
+      <div class="zone-scroll" id="zoneFilterPills">
+        <button class="zone-pill active" onclick="filterByZone('ALL')">Tüm Masalar</button>
+      </div>
+
+      <!-- Masalar Grid -->
+      <div class="tables-grid" id="tablesGrid"></div>
+
+      <!-- Test Simülasyon Butonu -->
+      <div class="test-alert-bar">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Kamera Olmadan Test Etmek İster Misiniz?</div>
+        <button class="btn-test" onclick="triggerSimulatedAlert()">⚡ Test: Masa 1 İçki Bitti Bildirimi Gönder</button>
+      </div>
+    </div>
+
+    <!-- 2. SEKME: DÜKKAN & KAT PLANI (FLOOR MAP) -->
+    <div id="tab-floor" class="tab-content">
+      <div class="section-title" style="justify-content: space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>🗺️</span> Dükkan Masa Yerleşimi
+        </div>
+        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Sürükleyip Konumlandırın)</span>
+      </div>
+
+      <div class="floor-canvas-container" id="floorCanvas">
+        <!-- Masalar dinamik olarak yerleştirilecek -->
+      </div>
+    </div>
+
+    <!-- 3. SEKME: DÜKKAN & MASA DÜZENLEYİCİ (SETTINGS) -->
+    <div id="tab-settings" class="tab-content">
+      <div class="section-title">
+        <span>➕</span> Yeni Masa Ekle
+      </div>
+
+      <div class="form-card">
+        <div class="form-group">
+          <label class="form-label">Masa Adı</label>
+          <input type="text" id="newTableName" class="form-input" placeholder="Örn: Masa 8, VIP-3, Bistro Bar">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bölge / Kısım</label>
+          <select id="newTableZone" class="form-select"></select>
+        </div>
+        <button class="btn-primary" onclick="addNewTable()">Masayı Kaydet</button>
+      </div>
+
+      <div class="section-title">
+        <span>🏢</span> Bölge Ekle (Salon, Bahçe, Teras vb.)
+      </div>
+      <div class="form-card">
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newZoneName" class="form-input" placeholder="Yeni Bölge Adı">
+          <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="addNewZone()">Ekle</button>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span>🗑️</span> Mevcut Masaları Düzenle / Sil
+      </div>
+      <div class="form-card" id="manageTablesList"></div>
+    </div>
+
+  </div>
+
+  <!-- Alt Navigasyon -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('alerts', this)">
+      <span class="nav-icon">🔔</span>
+      <span>Bildirimler</span>
+      <span id="navAlertBadge" class="nav-badge" style="display: none;">0</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('floor', this)">
+      <span class="nav-icon">🗺️</span>
+      <span>Kat Planı</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('settings', this)">
+      <span class="nav-icon">⚙️</span>
+      <span>Masa Düzeni</span>
+    </button>
+  </nav>
+
+  <script>
+    let appState = { zones: [], tables: [] };
+    let currentFilterZone = 'ALL';
+    let socket = null;
+    let audioCtx = null;
+
+    // Web Audio Synthesizer (Harici MP3 gerektirmez, anında çalar)
+    function playAlertChime() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+        
+        // 1. Ton (880Hz - La)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, now);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.35);
+
+        // 2. Ton (1174Hz - Re Yüksek)
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1174.66, now + 0.15);
+        gain2.gain.setValueAtTime(0.4, now + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.65);
+      } catch (e) {
+        console.log("Ses oynatma hatası:", e);
+      }
+    }
+
+    // Titreşim (Android ve destekleyen iOS cihazlar için)
+    function triggerVibration() {
+      if ("vibrate" in navigator) {
+        navigator.vibrate([300, 150, 300, 150, 500]);
+      }
+    }
+
+    // WebSocket Bağlantısı
+    function connectWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      socket = new WebSocket(wsUrl);
+
+      const statusEl = document.getElementById("connectionStatus");
+      const statusText = document.getElementById("connectionText");
+
+      socket.onopen = () => {
+        statusEl.className = "status-badge online";
+        statusText.innerText = "Canlı Bağlantı";
+      };
+
+      socket.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        if (payload.type === 'INITIAL_STATE' || payload.type === 'TABLES_UPDATED') {
+          appState = payload.data;
+          renderAll();
+        } else if (payload.type === 'NEW_ALERT') {
+          // Yeni Alarm Geldi!
+          playAlertChime();
+          triggerVibration();
+          updateOrAddTable(payload.table);
+          renderAll();
+        } else if (payload.type === 'ALERT_ACKNOWLEDGED' || payload.type === 'TABLE_CHANGED') {
+          if (payload.data) appState = payload.data;
+          else if (payload.table) updateOrAddTable(payload.table);
+          renderAll();
+        }
+      };
+
+      socket.onclose = () => {
+        statusEl.className = "status-badge";
+        statusText.innerText = "Yeniden Bağlanıyor...";
+        setTimeout(connectWebSocket, 2000);
+      };
+    }
+
+    function updateOrAddTable(table) {
+      const idx = appState.tables.findIndex(t => t.id === table.id);
+      if (idx !== -1) {
+        appState.tables[idx] = table;
+      } else {
+        appState.tables.push(table);
+      }
+    }
+
+    // Arayüz Render İşlemleri
+    function renderAll() {
+      renderAlertsBanner();
+      renderTablesGrid();
+      renderFloorMap();
+      renderSettings();
+      renderZonePills();
+    }
+
+    // Acil Alarmlar
+    function renderAlertsBanner() {
+      const container = document.getElementById("activeAlertsArea");
+      const navBadge = document.getElementById("navAlertBadge");
+      const alertTables = appState.tables.filter(t => t.status === 'alert');
+
+      if (alertTables.length > 0) {
+        navBadge.style.display = 'block';
+        navBadge.innerText = alertTables.length;
+        
+        container.innerHTML = alertTables.map(t => `
+          <div class="emergency-alert-card">
+            <div class="alert-header">
+              <span class="alert-tag">🚨 KADEH BİTTİ</span>
+              <span class="alert-time">Saat: ${t.last_alert || 'Yeni'}</span>
+            </div>
+            <div class="alert-table-title">${t.name}</div>
+            <div class="alert-desc">${t.zone} - ${t.alert_msg || 'Kadeh boşaldı, 2. siparişi sorun!'}</div>
+            <button class="btn-action" onclick="acknowledgeTable('${t.id}')">
+              <span>🚶</span> Masaya Gidiyorum / Tamamlandı
+            </button>
+          </div>
+        `).join('');
+      } else {
+        navBadge.style.display = 'none';
+        container.innerHTML = '';
+      }
+    }
+
+    // Masa Listesi
+    function renderTablesGrid() {
+      const grid = document.getElementById("tablesGrid");
+      const filtered = currentFilterZone === 'ALL' 
+        ? appState.tables 
+        : appState.tables.filter(t => t.zone === currentFilterZone);
+
+      grid.innerHTML = filtered.map(t => {
+        let statusClass = 'status-' + t.status;
+        let statusText = 'Boş / Temiz';
+        if (t.status === 'alert') statusText = '🔴 Kadeh Bitti!';
+        else if (t.status === 'active') statusText = '🟢 Dolu / Keyifli';
+        else if (t.status === 'serving') statusText = '🟡 Servis Ediliyor';
+
+        return `
+          <div class="table-card ${statusClass}" onclick="cycleTableStatus('${t.id}')">
+            <div class="table-card-top">
+              <div>
+                <div class="table-name">${t.name}</div>
+                <div class="table-zone-sub">${t.zone}</div>
+              </div>
+              <div class="table-status-badge"></div>
+            </div>
+            <div class="table-footer">
+              <span class="table-status-text">${statusText}</span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Tıkla Değiştir</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Kat Planı (Sürüklenebilir Masalar)
+    function renderFloorMap() {
+      const canvas = document.getElementById("floorCanvas");
+      canvas.innerHTML = appState.tables.map(t => {
+        return `
+          <div id="floor_${t.id}" 
+               class="floor-table status-${t.status}" 
+               style="left: ${t.x}px; top: ${t.y}px;"
+               onpointerdown="initDrag(event, '${t.id}')">
+            <div>${t.name}</div>
+            <div style="font-size:0.65rem; opacity:0.8;">${t.zone}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Sürükle ve Bırak (Masa Konumlandırma)
+    let activeDrag = null;
+    function initDrag(e, tableId) {
+      const el = document.getElementById(`floor_${tableId}`);
+      const rect = el.getBoundingClientRect();
+      const parentRect = el.parentElement.getBoundingClientRect();
+
+      activeDrag = {
+        id: tableId,
+        el: el,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        parentRect: parentRect
+      };
+
+      el.setPointerCapture(e.pointerId);
+      el.onpointermove = doDrag;
+      el.onpointerup = endDrag;
+    }
+
+    function doDrag(e) {
+      if (!activeDrag) return;
+      const x = Math.max(0, Math.min(activeDrag.parentRect.width - 95, e.clientX - activeDrag.parentRect.left - activeDrag.offsetX));
+      const y = Math.max(0, Math.min(activeDrag.parentRect.height - 95, e.clientY - activeDrag.parentRect.top - activeDrag.offsetY));
+      activeDrag.el.style.left = `${x}px`;
+      activeDrag.el.style.top = `${y}px`;
+      activeDrag.currentX = Math.round(x);
+      activeDrag.currentY = Math.round(y);
+    }
+
+    function endDrag(e) {
+      if (!activeDrag) return;
+      activeDrag.el.onpointermove = null;
+      activeDrag.el.onpointerup = null;
+
+      if (activeDrag.currentX !== undefined) {
+        // Backend'e yeni koordinatları kaydet
+        fetch(`/api/tables/${activeDrag.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ x: activeDrag.currentX, y: activeDrag.currentY })
+        });
+      }
+      activeDrag = null;
+    }
+
+    // Bölge Hapları
+    function renderZonePills() {
+      const container = document.getElementById("zoneFilterPills");
+      const pills = [
+        `<button class="zone-pill ${currentFilterZone === 'ALL' ? 'active' : ''}" onclick="filterByZone('ALL')">Tüm Masalar</button>`,
+        ...appState.zones.map(z => `
+          <button class="zone-pill ${currentFilterZone === z ? 'active' : ''}" onclick="filterByZone('${z}')">${z}</button>
+        `)
+      ];
+      container.innerHTML = pills.join('');
+
+      // Yeni Masa ekleme formu select kutusunu da güncelle
+      const select = document.getElementById("newTableZone");
+      if (select) {
+        select.innerHTML = appState.zones.map(z => `<option value="${z}">${z}</option>`).join('');
+      }
+    }
+
+    function filterByZone(zone) {
+      currentFilterZone = zone;
+      renderZonePills();
+      renderTablesGrid();
+    }
+
+    // Ayarlar & Yönetim Listesi
+    function renderSettings() {
+      const list = document.getElementById("manageTablesList");
+      if (!list) return;
+
+      list.innerHTML = appState.tables.map(t => `
+        <div class="list-item-row">
+          <div>
+            <div style="font-weight:700;">${t.name}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${t.zone}</div>
+          </div>
+          <button class="btn-danger-sm" onclick="deleteTable('${t.id}')">Sil</button>
+        </div>
+      `).join('');
+    }
+
+    // API Aksiyonları
+    async function acknowledgeTable(tableId) {
+      await fetch(`/api/acknowledge/${tableId}`, { method: 'POST' });
+    }
+
+    async function cycleTableStatus(tableId) {
+      const t = appState.tables.find(x => x.id === tableId);
+      if (!t) return;
+      const nextStatus = t.status === 'idle' ? 'active' : (t.status === 'active' ? 'serving' : 'idle');
+      await fetch(`/api/tables/${tableId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus })
+      });
+    }
+
+    async function addNewTable() {
+      const nameInput = document.getElementById("newTableName");
+      const zoneSelect = document.getElementById("newTableZone");
+      const name = nameInput.value.trim();
+      const zone = zoneSelect.value;
+
+      if (!name) return alert("Lütfen masa adı girin!");
+
+      await fetch('/api/tables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, zone, x: 120, y: 120 })
+      });
+      nameInput.value = '';
+      alert(`${name} başarıyla eklendi!`);
+    }
+
+    async function deleteTable(tableId) {
+      if (!confirm("Bu masayı silmek istediğinize emin misiniz?")) return;
+      await fetch(`/api/tables/${tableId}`, { method: 'DELETE' });
+    }
+
+    async function addNewZone() {
+      const input = document.getElementById("newZoneName");
+      const name = input.value.trim();
+      if (!name) return;
+      await fetch('/api/zones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      input.value = '';
+    }
+
+    async function triggerSimulatedAlert() {
+      playAlertChime();
+      triggerVibration();
+      await fetch('/api/alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table_id: 't1',
+          alert_type: 'empty_glass',
+          message: 'Kadeh Boşaldı (2. Siparişi Alın)'
+        })
+      });
+    }
+
+    // Sekme Değiştirme
+    function switchTab(tabName, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Sayfa Yüklendiğinde
+    window.addEventListener('DOMContentLoaded', () => {
+      connectWebSocket();
+      // Ekranın kapanmasını önle (Screen Wake Lock API)
+      if ('wakeLock' in navigator) {
+        try { navigator.wakeLock.request('screen'); } catch(e){}
+      }
+    });
+  </script>
+</body>
+</html>

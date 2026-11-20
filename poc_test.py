@@ -22,6 +22,9 @@ import time
 import argparse
 import sys
 import os
+import json
+import urllib.request
+import threading
 
 # Windows sesli uyarı desteği
 try:
@@ -34,7 +37,28 @@ except ImportError:
 parser = argparse.ArgumentParser(description="Pub Bardak Doluluk Takip PoC")
 parser.add_argument("--source", default="0", help="Kamera indeksi (0, 1) veya IP Webcam URL'i")
 parser.add_argument("--alarm_sec", type=int, default=5, help="Test için alarm süresi (saniye)")
+parser.add_argument("--table", default="Masa 1", help="Kameranın bağlı olduğu masa adı (örn: Masa 1, VIP 2)")
+parser.add_argument("--server", default="http://localhost:8000", help="Mobil sunucu adresi")
 args = parser.parse_args()
+
+table_id_name = args.table
+server_url = args.server
+alert_sent_to_server = False
+
+def notify_mobile_server(table_name, srv_url):
+    try:
+        url = f"{srv_url}/api/alert"
+        payload = json.dumps({
+            "table_id": table_name,
+            "alert_type": "empty_glass",
+            "message": "Kadeh Bitti! (2. Siparişi Sor)"
+        }).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=1.5)
+        print(f"[BILGI] Mobil aplikasyona ({table_name}) bildirimi firlatildi!")
+    except Exception as e:
+        # Sunucu kapalıysa sessizce geç
+        pass
 
 # Kamera kaynağını belirle
 source = args.source
@@ -144,8 +168,11 @@ while True:
                     winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
                 except Exception:
                     pass
+            if not alert_sent_to_server:
+                threading.Thread(target=notify_mobile_server, args=(table_id_name, server_url), daemon=True).start()
+                alert_sent_to_server = True
             alarm_triggered = True
-            timer_text = "ALARM: SURE DOLDU! GARSON GONDERILIYOR"
+            timer_text = f"ALARM: {table_id_name} SURE DOLDU! GARSON BILDIRILDI"
         else:
             alarm_triggered = False
             timer_text = f"BOS ALGILANDI: {remaining:.1f}s sonra alarm"
@@ -153,7 +180,8 @@ while True:
         # Bardak dolu/üzeri kapalı, sayacı sıfırla
         empty_start_time = None
         alarm_triggered = False
-        timer_text = "DURUM: DOLU / ICILIYOR"
+        alert_sent_to_server = False
+        timer_text = f"DURUM: {table_id_name} DOLU / ICILIYOR"
 
     # GÖRSEL ARAYÜZ ÇİZİMİ
     # Odak Alanı Çerçevesi
